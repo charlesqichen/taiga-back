@@ -48,7 +48,6 @@ import serpy
 
 class TaskSerializer(WatchersValidator, VoteResourceSerializerMixin, EditableWatchedResourceModelSerializer,
                      serializers.ModelSerializer):
-    tags = TagsAndTagsColorsField(default=[], required=False)
     external_reference = PgArrayField(required=False)
     comment = serializers.SerializerMethodField("get_comment")
     milestone_slug = serializers.SerializerMethodField("get_milestone_slug")
@@ -77,6 +76,17 @@ class TaskSerializer(WatchersValidator, VoteResourceSerializerMixin, EditableWat
 
     def get_description_html(self, obj):
         return mdrender(obj.project, obj.description)
+
+    def get_is_closed(self, obj):
+        return obj.status is not None and obj.status.is_closed
+
+
+class BasicTaskSerializer(serializers.ModelSerializer):
+    is_closed =  serializers.SerializerMethodField("get_is_closed")
+
+    class Meta:
+        model = models.Task
+        fields = ('id', 'ref', 'subject', 'status', 'is_blocked', 'is_iocaine', 'is_closed')
 
     def get_is_closed(self, obj):
         return obj.status is not None and obj.status.is_closed

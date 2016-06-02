@@ -29,20 +29,20 @@ from taiga.base.neighbors import NeighborsSerializerMixin
 from taiga.base.utils import json
 
 from taiga.mdrender.service import render as mdrender
-
+from taiga.projects.attachments.serializers import BasicAttachmentSerializer
 from taiga.projects.milestones.validators import SprintExistsValidator
-from taiga.projects.models import Project, UserStoryStatus
 from taiga.projects.mixins.serializers import OwnerExtraInfoMixin
 from taiga.projects.mixins.serializers import AssigedToExtraInfoMixin
 from taiga.projects.mixins.serializers import StatusExtraInfoMixin
+from taiga.projects.models import Project, UserStoryStatus
 from taiga.projects.notifications.mixins import EditableWatchedResourceModelSerializer
 from taiga.projects.notifications.mixins import ListWatchedResourceModelSerializer
 from taiga.projects.notifications.validators import WatchersValidator
 from taiga.projects.serializers import BasicUserStoryStatusSerializer
 from taiga.projects.tagging.fields import TagsAndTagsColorsField
+from taiga.projects.tasks.serializers import BasicTaskSerializer
 from taiga.projects.userstories.validators import UserStoryExistsValidator
-from taiga.projects.validators import ProjectExistsValidator
-from taiga.projects.validators import UserStoryStatusExistsValidator
+from taiga.projects.validators import ProjectExistsValidator, UserStoryStatusExistsValidator
 from taiga.projects.votes.mixins.serializers import VoteResourceSerializerMixin
 from taiga.projects.votes.mixins.serializers import ListVoteResourceSerializerMixin
 
@@ -185,6 +185,20 @@ class UserStoryListSerializer(ListVoteResourceSerializerMixin, ListWatchedResour
 
     def get_comment(self, obj):
         return ""
+
+    def get_attachments(self, obj):
+        include_attachments = getattr(obj, "include_attachments", False)
+        if not include_attachments:
+            return []
+
+        return BasicAttachmentSerializer(obj.attachments.all(), many=True).data
+
+    def get_tasks(self, obj):
+        include_tasks = getattr(obj, "include_tasks", False)
+        if not include_tasks:
+            return []
+
+        return BasicTaskSerializer(obj.tasks.all(), many=True).data
 
 
 class UserStoryNeighborsSerializer(NeighborsSerializerMixin, UserStorySerializer):

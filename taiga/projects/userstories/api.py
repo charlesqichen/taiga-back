@@ -105,10 +105,18 @@ class UserStoryViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixi
                                "owner",
                                "assigned_to",
                                "generated_from_issue")
+
         qs = self.attach_votes_attrs_to_queryset(qs)
         qs = self.attach_watchers_attrs_to_queryset(qs)
         qs = attach_total_points(qs)
         qs = attach_role_points(qs)
+
+        if "include_attachments" in self.request.QUERY_PARAMS:
+            qs = qs.extra(select={'include_attachments': "True"})
+
+        if "include_tasks" in self.request.QUERY_PARAMS:
+            qs = qs.extra(select={'include_tasks': "True"})
+
         return qs
 
     def pre_conditions_on_save(self, obj):
