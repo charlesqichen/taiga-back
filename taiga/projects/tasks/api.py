@@ -94,13 +94,18 @@ class TaskViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
     def get_queryset(self):
         qs = super().get_queryset()
         qs = self.attach_votes_attrs_to_queryset(qs)
-        qs = qs.select_related("milestone",
-                               "owner",
-                               "assigned_to",
-                               "status",
-                               "project")
+        qs = qs.select_related(
+            "milestone",
+            "owner",
+            "assigned_to",
+            "status",
+            "project")
 
-        return self.attach_watchers_attrs_to_queryset(qs)
+        qs = self.attach_watchers_attrs_to_queryset(qs)
+        if "include_attachments" in self.request.QUERY_PARAMS:
+            qs = qs.extra(select={"include_attachments": "True"})
+
+        return qs
 
     def pre_save(self, obj):
         if obj.user_story:

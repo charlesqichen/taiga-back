@@ -23,6 +23,8 @@ from taiga.base.api import serializers
 from taiga.base.fields import PgArrayField
 from taiga.base.neighbors import NeighborsSerializerMixin
 
+from taiga.mdrender.service import render as mdrender
+from taiga.projects.attachments.serializers import BasicAttachmentSerializer
 from taiga.projects.milestones.validators import SprintExistsValidator
 from taiga.projects.mixins.serializers import OwnerExtraInfoMixin
 from taiga.projects.mixins.serializers import AssigedToExtraInfoMixin
@@ -81,6 +83,7 @@ class TaskSerializer(WatchersValidator, VoteResourceSerializerMixin, EditableWat
         return obj.status is not None and obj.status.is_closed
 
 
+
 class BasicTaskSerializer(serializers.ModelSerializer):
     is_closed =  serializers.SerializerMethodField("get_is_closed")
 
@@ -116,11 +119,20 @@ class TaskListSerializer(ListVoteResourceSerializerMixin, ListWatchedResourceMod
     tags = serpy.Field()
     is_closed = serpy.MethodField()
 
+    attachments = serializers.SerializerMethodField("get_attachments")
+
     def get_milestone_slug(self, obj):
         return obj.milestone.slug if obj.milestone else None
 
     def get_is_closed(self, obj):
         return obj.status is not None and obj.status.is_closed
+
+    def get_attachments(self, obj):
+        include_attachments = getattr(obj, "include_attachments", False)
+        if not include_attachments:
+            return []
+
+        return BasicAttachmentSerializer(obj.attachments.all(), many=True).data
 
 
 class TaskNeighborsSerializer(NeighborsSerializerMixin, TaskSerializer):

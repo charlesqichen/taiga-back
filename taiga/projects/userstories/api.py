@@ -112,10 +112,10 @@ class UserStoryViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixi
         qs = attach_role_points(qs)
 
         if "include_attachments" in self.request.QUERY_PARAMS:
-            qs = qs.extra(select={'include_attachments': "True"})
+            qs = qs.extra(select={"include_attachments": "True"})
 
         if "include_tasks" in self.request.QUERY_PARAMS:
-            qs = qs.extra(select={'include_tasks': "True"})
+            qs = qs.extra(select={"include_tasks": "True"})
 
         return qs
 
